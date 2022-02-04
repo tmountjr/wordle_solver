@@ -143,7 +143,9 @@ function wordle() {
     // deleting 'a' from position 1 still leaves ['ba', 'be'] in postion 0 starting with b.
     // almost like we need to regenerate the groupings each time
     // or use a data structure that will ferret out interior letters efficiently.
-    // TODO: will a trie work here?
+    // TODO: will a trie work here? or a set of tries? Maybe a dedicated class that
+    // recomputes the entire structure on delete? Feels like that would be not
+    // super performant...
 
     // Start building a pool of next guesses
     let pool = new Set<string>();
