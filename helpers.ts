@@ -3,7 +3,7 @@
  * @param sets Two or more sets to join.
  * @returns A single joined set.
  */
-export function union(...sets: Set<number|string>[]): Set<number|string> {
+export function union(...sets: Set<string>[]): Set<string> {
   if (sets.length < 2) throw new Error('Union requires at least two sets.');
   let base = sets[0];
   for (let i = 1; i < sets.length; i++) {
@@ -17,7 +17,7 @@ export function union(...sets: Set<number|string>[]): Set<number|string> {
  * @param sets Two or more sets to intersect.
  * @returns A single set representing values that appear in all sets.
  */
-export function intersect(...sets: Set<number|string>[]): Set<number|string> {
+export function intersect(...sets: Set<string>[]): Set<string> {
   if (sets.length < 2) throw new Error('Intersect requires at least two sets.');
   let base = sets[0];
   for (let i = 1; i < sets.length; i++) {
@@ -31,7 +31,7 @@ export function intersect(...sets: Set<number|string>[]): Set<number|string> {
  * @param sets Two or more sets to diff.
  * @returns A single set representing the unique values of all the sets.
  */
-export function difference(...sets: Set<number|string>[]): Set<number|string> {
+export function difference(...sets: Set<string>[]): Set<string> {
   if (sets.length < 2) throw new Error('Difference requires at least two sets.');
   let base = sets[0];
   for (let i = 1; i < sets.length; i++) {

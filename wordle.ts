@@ -132,73 +132,40 @@ function wordle() {
     let details: { [key: string]: number[] } = { x: [], y: [], g: [] };
     results.forEach((result, index) => details[result].push(index));
 
+    // First things first, remove letters that don't ever appear.
+    details['x'].forEach(deadLetterIndex => {
+      const deadLetter = guess[deadLetterIndex];
+      grouped.forEach((v, pos) => delete grouped[pos][deadLetter]);
+    });
+
+    // This is not deleting all letters from [grouped] that contain a.
+    // For eample: [ 0: { a: [ 'aa', 'ab' ], b: [ 'ba', 'be' ] } ]
+    // deleting 'a' from position 1 still leaves ['ba', 'be'] in postion 0 starting with b.
+    // almost like we need to regenerate the groupings each time
+    // or use a data structure that will ferret out interior letters efficiently.
+    // TODO: will a trie work here?
+
     // Start building a pool of next guesses
     let pool = new Set<string>();
 
     // Work through the "green" spaces
     if (details['g'].length) {
-      for (const correctlyPlacedLetterIndex of details['g']) {
-        const correctlyPlacedLetter = guess[correctlyPlacedLetterIndex];
-        if (pool.size === 0) {
-          pool = grouped[correctlyPlacedLetterIndex][correctlyPlacedLetter]
-        } else {
-          const comparitor = grouped[correctlyPlacedLetterIndex][correctlyPlacedLetter];
-          pool = new Set([...pool].filter(word => comparitor.has(word)));
-        }
-      }
+      const poolCandidates = details['g'].map(i => {
+        const letter = guess[i];
+        return grouped[i][letter];
+      });
+      pool = SetOperations.intersect(...poolCandidates);
     }
 
     // Now work through the letters that were found but incorrectly placed
     if (details['y'].length) {
-      for (const foundLetterIndex of details['y']) {
-        const foundLetter = guess[foundLetterIndex];
-        if (pool.size === 0) {
-          // since we don't know WHERE the letter should go, grab all words
-          // containing that letter, then remove words with that letter in the
-          // index (else it would be green)
-          pool = wordContains.get(foundLetter) || new Set<string>();
-        } else {
-          // intersect all words with this letter
-          const comparitor = wordContains.get(foundLetter) || new Set<string>();
-          pool = new Set([...pool].filter(word => comparitor.has(word)));
-        }
-
-        // remove any words that have that letter in the current position (would
-        // be green in that case)
-        const comparitor = grouped[foundLetterIndex][foundLetter];
-        pool = new Set([...pool].filter(word => comparitor.has(word)));
-      }
-    }
-
-    // Finally eliminate all words from the pool and future consideration where
-    // we know the letter is not found.
-    for (const deadLetterIndex of details['x']) {
-      const deadLetter = guess[deadLetterIndex];
-      if (pool.size > 0) {
-        const contains = wordContains.get(deadLetter) || new Set<string>();
-        pool = new Set([...pool].filter(word => contains.has(word)));
-      }
-
-      // Remove all words from the "grouped" list with that letter in any position
-      for (let i = 0; i < 2; i++) {
-        delete grouped[i][deadLetter];
-      }
-
-      // Remove all words from the "wordContains" list with that letter
-      // Can't just delete from "wordContains" though because those words are
-      // repeated. Instead, create a new "wordContains" list by filtering out the
-      // initial word list.
-      const contains = wordContains.get(deadLetter) || new Set<string>();
-      const temp: string[] = words.filter(word => !contains.has(word));
-      wordContains = new Map<string, Set<string>>();
-      for (const word of temp) {
-        for (let i = 0; i < 2; i++) {
-          const letter = word[i];
-          let temp = wordContains.get(letter) || new Set<string>();
-          temp.add(word);
-          wordContains.set(letter, temp);
-        }
-      }
+      const poolCandidates = details['y'].map(i => {
+        const letter = guess[i];
+        // Get all words that have [letter] in any position EXCEPT [i]
+        const allWordsWithLetter = grouped.filter((v, idx) => idx !== i).map(x => x[letter]);
+        return SetOperations.intersect(...allWordsWithLetter);
+      });
+      pool = SetOperations.intersect(pool, ...poolCandidates);
     }
 
     // Now delete the guess from the pool if it somehow survived
@@ -214,7 +181,7 @@ function wordle() {
 
     // Get a new guess.
     if (pool.size === 0) {
-      pool = wordContains.get([...wordContains.keys()][0]) || new Set<string>();
+      pool = grouped[0][Object.keys(grouped[0])[0]];
     }
     guess = [...pool][Math.floor(Math.random() * pool.size)];
   }
@@ -250,6 +217,11 @@ function _wordleResults(target: string, guess: string): string[] {
   });
 }
 
+/**
+ * Get a color-coded output string of results.
+ * @param results The raw string of results
+ * @returns A color-coded output string.
+ */
 function _wordleColors(results: string[]): string {
   const colors: { [key: string]: string; } = {
     x: String.fromCodePoint(11036),
