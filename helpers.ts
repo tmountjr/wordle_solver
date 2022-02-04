@@ -4,7 +4,8 @@
  * @returns A single joined set.
  */
 export function union(...sets: Set<string>[]): Set<string> {
-  if (sets.length < 2) throw new Error('Union requires at least two sets.');
+  if (sets.length < 1) throw new Error('Union requires at least one set.');
+  if (sets.length === 1) return sets[0];
   let base = sets[0];
   for (let i = 1; i < sets.length; i++) {
     base = new Set([...base].concat([...sets[i]]));
@@ -18,7 +19,8 @@ export function union(...sets: Set<string>[]): Set<string> {
  * @returns A single set representing values that appear in all sets.
  */
 export function intersect(...sets: Set<string>[]): Set<string> {
-  if (sets.length < 2) throw new Error('Intersect requires at least two sets.');
+  if (sets.length < 1) throw new Error('Intersect requires at least one set.');
+  if (sets.length === 1) return sets[0];
   let base = sets[0];
   for (let i = 1; i < sets.length; i++) {
     base = new Set([...base].filter(x => sets[i].has(x)));
@@ -32,7 +34,8 @@ export function intersect(...sets: Set<string>[]): Set<string> {
  * @returns A single set representing the unique values of all the sets.
  */
 export function difference(...sets: Set<string>[]): Set<string> {
-  if (sets.length < 2) throw new Error('Difference requires at least two sets.');
+  if (sets.length < 1) throw new Error('Difference requires at least one set.');
+  if (sets.length === 1) return sets[0];
   let base = sets[0];
   for (let i = 1; i < sets.length; i++) {
     base = new Set([...base].filter(x => !sets[i].has(x)));
