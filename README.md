@@ -25,7 +25,7 @@ Second thing we do is look at the letters that we know are in the proper positio
 
 Finally we look at the letters that we know exist in the solution but are not yet in the proper place. We once again take the **intersection** of the subset yielded in the previous result, this time comparing it with all words that have those letters in the proper positions _and_ contain the other letters we know are in the final solution.
 
-Depending on how many words were removed, this can substantially constrain the list of words. For each subsequent step, we go through the same operations, first removing non-candidates and then filtering the resulting pool of candidate words. After 5 steps the pool of words ideally will have shrunk from tens of thousands of words to less then a dozen.
+Depending on how many words were removed, this can substantially constrain the list of words. For each subsequent step, we go through the same operations, first removing non-candidates and then filtering the resulting pool of candidate words. After 5 steps the pool of words ideally will have shrunk from tens of thousands of words to less than a dozen.
 
 ## Implementation
 The `WordList` class is instantiated with an array of words to be used as the original list of candidate words. This list is converted into a `Set` and stored as a protected member of the class.
