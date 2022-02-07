@@ -82,7 +82,7 @@ function wordle() {
   } else {
     console.log('Failed to find a solution.');
     console.log(`Word was: ${targetWord}`);
-    console.log(`There were still ${wordList.words.size} possibilities left to try.`);
+    console.log(`There were still ${wordList.size} possibilities left to try.`);
   }
 }
 

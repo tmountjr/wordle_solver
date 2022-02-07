@@ -2,11 +2,13 @@ import { union, difference, intersect } from './helpers';
 
 export class WordList {
   protected groupings: Map<string, Set<string>>[];
-  public words: Set<string>;
+  protected words: Set<string>;
+  public size: number = 0;
   private readonly wordLength: number = 0;
 
   constructor(words: string[]) {
     this.wordLength = words[0].length;
+    if (!words.every(w => w.length === this.wordLength)) throw new Error('All words must be the same length.');
     this.words = new Set<string>(words);
     this.regenerateList();
   }
@@ -71,5 +73,6 @@ export class WordList {
         this.groupings[i][letter].add(word);
       }
     }
+    this.size = this.words.size;
   }
 }
