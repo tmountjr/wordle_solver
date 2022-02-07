@@ -5,6 +5,7 @@ export class WordList {
   protected words: Set<string>;
   public size: number = 0;
   private readonly wordLength: number = 0;
+  protected wordsWithLetter: Map<string, Set<string>>;
 
   constructor(words: string[]) {
     this.wordLength = words[0].length;
@@ -29,7 +30,7 @@ export class WordList {
    */
   public containsAny(letter: string): Set<string> {
     if (this.words.size === 0) throw new Error('Word list is empty.');
-    return union(...this.groupings.map(v => v[letter]).filter(x => x));
+    return this.wordsWithLetter.get(letter) || new Set<string>();
   }
 
   /**
@@ -40,6 +41,57 @@ export class WordList {
   public containsAtIndex(letter: string, index: number): Set<string> {
     if (this.words.size === 0) throw new Error('Word list is empty.');
     return this.groupings[index][letter] || new Set<string>();
+  }
+
+  /**
+   * Process the results of a guess.
+   * @param guess The guess that generated the results.
+   * @param results The results of a guess; must contain ONLY 'x', 'g', and 'y' and must match the length of the guess.
+   */
+  public processExternalResult(guess: string, results: string[]): void {
+    // Validate input.
+    if (results.length !== this.wordLength) throw new Error('Results length must match the word length.');
+    if (!results.every(r => r === 'x' || r === 'g' || r === 'y')) throw new Error('Results must include ONLY "x", "g", and "y" values.');
+    if (guess.length !== this.wordLength) throw new Error('Supplied guess is not the same length as the words in the word list.');
+
+    // Convert the results into an object mapping.
+    const details: { [key: string]: number[] } = { x: [], y: [], g: [] };
+    results.forEach((result, index) => details[result].push(index));
+
+    // Keep track of whether or not changes have been made (if no changes were made, no need to comb the list again).
+    let changesMade = false;
+    
+    // Remove all words based on 'x' values.
+    if (details['x'].length) {
+      const toRemove = union(...details['x'].map(i => guess[i]).map(letter => this.wordsWithLetter.get(letter) || new Set<string>()));
+      if (toRemove.size > 0) {
+        this.words = difference(this.words, toRemove);
+        changesMade = true;
+      }
+    }
+
+    // Filter the list to words that include 'y' and have 'g' in specific positions.
+    if (details['y'].length) {
+      let mustHave = intersect(...details['y'].map(i => this.containsAny(guess[i])));
+      mustHave = difference(mustHave, ...details['y'].map(i => this.containsAtIndex(guess[i], i)));
+      if (mustHave.size > 0) {
+        this.words = intersect(this.words, mustHave);
+        changesMade = true;
+      }
+    }
+
+    if (details['g'].length) {
+      const mustHave = intersect(...details['g'].map(position => this.containsAtIndex(guess[position], position)));
+      if (mustHave.size > 0) {
+        this.words = intersect(this.words, mustHave);
+        changesMade = true;
+      }
+    }
+
+    // Regenerate the pre-computed sets if there were changes made to the primary list.
+    if (changesMade) {
+      this.regenerateList();
+    }
   }
 
   /**
@@ -65,14 +117,27 @@ export class WordList {
    */
   private regenerateList(): void {
     this.groupings = [];
+    this.wordsWithLetter = new Map<string, Set<string>>();
     for (let word of this.words) {
       for (let i = 0; i < this.wordLength; i++) {
+        // Populate the groupings object.
         if (this.groupings.length !== this.wordLength) this.groupings.push(new Map<string, Set<string>>());
         const letter = word[i];
         if (!(letter in this.groupings[i])) this.groupings[i][letter] = new Set<string>();
         this.groupings[i][letter].add(word);
+
+        // Populate the wordsWithLetter object.
+        if (!this.wordsWithLetter.has(letter)) {
+          this.wordsWithLetter.set(letter, new Set<string>([word]));
+        } else {
+          const prev = this.wordsWithLetter.get(letter) || new Set<string>();
+          prev.add(word);
+          this.wordsWithLetter.set(letter, prev);
+        }
       }
     }
+
+    // Update the size property.
     this.size = this.words.size;
   }
 }

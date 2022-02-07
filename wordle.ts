@@ -63,7 +63,7 @@ function wordle() {
 
     // Push a results glyph
     const colors = _wordleColors(results);
-    turnResults.push(`${guess} ${colors}`)
+    turnResults.push(`${guess} ${colors} (${wordList.size} possibilities left)`)
 
     // Print this round's results
     console.log(turnResults[turnResults.length - 1]);
@@ -76,13 +76,12 @@ function wordle() {
   if (guess === targetWord) {
     rounds++;
     const results = _wordleColors(Array(guess.length).fill('g'));
-    turnResults.push(`${guess} ${results}`);
+    turnResults.push(`${guess} ${results} (${wordList.size} possibilities left)`);
     console.log(turnResults[turnResults.length - 1]);
     console.log(`Success! Found match in ${rounds} turns.`);
   } else {
     console.log('Failed to find a solution.');
     console.log(`Word was: ${targetWord}`);
-    console.log(`There were still ${wordList.size} possibilities left to try.`);
   }
 }
 
