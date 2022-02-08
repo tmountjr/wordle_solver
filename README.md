@@ -2,8 +2,8 @@
 Small-ish TypeScript implementation of Wordle logic. In a nutshell, pick a word, see if any letters are exact matches (represented by a green square), misplaced (represented by a yellow square), or simply not found. Based on that set of results, make a new guess. Keep going until you guess the word or run out of tries.
 
 ## Known bugs
-* If a word contains the same letter twice, the system might throw an error.
-* Occasionally the word list will end up empty before all the guesses have been used.
+* ~~If a word contains the same letter twice, the system might throw an error.~~ This is hopefully fixed.
+* ~~Occasionally the word list will end up empty before all the guesses have been used.~~ This should definitely be fixed.
 
 ## Potential Optimizations
 * Seems like the set theory operations (`union`, `intersect`, and `difference`) could possibly be optimized since they ultimately rely on converting to and from arrays.
