@@ -30,7 +30,7 @@ function wordle() {
       // Get a new guess.
       guess = wordList.getRandomWord();
       rounds++;
-    } else if (rounds === 6) break;
+    } else break;
   }
 
 
