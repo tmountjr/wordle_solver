@@ -58,39 +58,39 @@ export class WordList {
     const details: { [key: string]: number[] } = { x: [], y: [], g: [] };
     results.forEach((result, index) => details[result].push(index));
 
-    // Keep track of whether or not changes have been made (if no changes were made, no need to comb the list again).
-    let changesMade = false;
-    
     // Remove all words based on 'x' values.
     if (details['x'].length) {
       const toRemove = union(...details['x'].map(i => guess[i]).map(letter => this.wordsWithLetter.get(letter) || new Set<string>()));
       if (toRemove.size > 0) {
+        const prevWordsSize = this.words.size;
         this.words = difference(this.words, toRemove);
-        changesMade = true;
+        const afterWordsSize = this.words.size;
+        if (prevWordsSize !== afterWordsSize) this.regenerateList();
       }
     }
 
     // Filter the list to words that include 'y' and have 'g' in specific positions.
+    if (details['g'].length) {
+      const mustHave = intersect(...details['g'].map(position => this.containsAtIndex(guess[position], position)));
+      if (mustHave.size > 0) {
+        const prevWordsSize = this.words.size;
+        this.words = intersect(this.words, mustHave);
+        this.regenerateList();
+        const afterWordsSize = this.words.size;
+        if (prevWordsSize !== afterWordsSize) this.regenerateList();
+      }
+    }
+
+
     if (details['y'].length) {
       let mustHave = intersect(...details['y'].map(i => this.containsAny(guess[i])));
       mustHave = difference(mustHave, ...details['y'].map(i => this.containsAtIndex(guess[i], i)));
       if (mustHave.size > 0) {
+        const prevWordsSize = this.words.size;
         this.words = intersect(this.words, mustHave);
-        changesMade = true;
+        const afterWordsSize = this.words.size;
+        if (prevWordsSize !== afterWordsSize) this.regenerateList();
       }
-    }
-
-    if (details['g'].length) {
-      const mustHave = intersect(...details['g'].map(position => this.containsAtIndex(guess[position], position)));
-      if (mustHave.size > 0) {
-        this.words = intersect(this.words, mustHave);
-        changesMade = true;
-      }
-    }
-
-    // Regenerate the pre-computed sets if there were changes made to the primary list.
-    if (changesMade) {
-      this.regenerateList();
     }
   }
 

@@ -10,56 +10,14 @@ function wordle() {
   let guess: string = 'arose';
   
   const turnResults: string[] = [];
-  let rounds = 0;
+  let rounds = 1;
   
-  while (guess !== targetWord && rounds < 6) {
-    rounds++;
-  
+  while (rounds <= 6) {
+    if (guess === targetWord) break;
     let results = _wordleResults(targetWord, guess);
-    let details: { [key: string]: number[] } = { x: [], y: [], g: [] };
-    results.forEach((result, index) => details[result].push(index));
 
-    // First things first, remove letters that don't ever appear.
-    // Use a set in case the word in question contained two of the same letter.
-    const setToDelete: string[] = [...new Set(...details['x'].map(i => guess[i]))];
-    setToDelete.forEach(deadLetter => wordList.removeLetter(deadLetter));
-
-    // Start building a pool of next guesses
-    let pool = new Set<string>();
-
-    // Work through the "green" spaces
-    if (details['g'].length) {
-      const poolCandidates = details['g'].map(guessIndex => {
-        const letter = guess[guessIndex];
-        return wordList.containsAtIndex(letter, guessIndex);
-      });
-      pool = intersect(...poolCandidates);
-    }
-
-    // Now work through the letters that were found but incorrectly placed
-    if (details['y'].length) {
-      const poolCandidates = details['y'].map(guessIndex => {
-        const letter = guess[guessIndex];
-        // Get all words that have [letter] in any position EXCEPT [i]
-        const allWordsWithLetter = difference(
-          wordList.containsAny(letter),
-          wordList.containsAtIndex(letter, guessIndex)
-        );
-        return allWordsWithLetter;
-      });
-      if (pool.size === 0) {
-        pool = intersect(...poolCandidates)
-      } else {
-        pool = intersect(pool, ...poolCandidates);
-      }
-    }
-
-    // Now delete the guess from the pool if it somehow survived
-    pool.delete(guess);
-
-    // Rebuild the word list (now that we've done the computations) because the
-    // pool found here really is the pool we should be working from.
-    if (pool.size > 0) wordList = new WordList([...pool]);
+    // Process the results within the WordList.
+    wordList.processExternalResult(guess, results);
 
     // Push a results glyph
     const colors = _wordleColors(results);
@@ -68,13 +26,15 @@ function wordle() {
     // Print this round's results
     console.log(turnResults[turnResults.length - 1]);
 
-    // Get a new guess.
-    guess = wordList.getRandomWord();
+    if (rounds < 6) {
+      // Get a new guess.
+      guess = wordList.getRandomWord();
+      rounds++;
+    } else if (rounds === 6) break;
   }
 
 
   if (guess === targetWord) {
-    rounds++;
     const results = _wordleColors(Array(guess.length).fill('g'));
     turnResults.push(`${guess} ${results} (${wordList.size} possibilities left)`);
     console.log(turnResults[turnResults.length - 1]);
@@ -93,16 +53,14 @@ function wordle() {
  */
 function _wordleResults(target: string, guess: string): string[] {
   return guess.split('').map((letter, index) => {
-    if (target.indexOf(letter) === index) {
-      // letter found in the right spot
-      return 'g'; // g for green
+    let toReturn = 'x';
+    if (target.indexOf(letter) > -1) {
+      toReturn = 'y';
+      if (target[index] === letter) {
+        toReturn = 'g';
+      }
     }
-    else if (target.indexOf(letter) !== -1) {
-      // letter found but in the wrong spot
-      return 'y'; // y for yellow
-    }
-    // letter not found at all
-    return 'x'; // x for grey
+    return toReturn;
   });
 }
 
