@@ -1,11 +1,11 @@
 import { union, difference, intersect } from './helpers';
 
 export class WordList {
-  protected groupings: Map<string, Set<string>>[];
+  protected groupings: Map<string, Set<string>>[] = [];
   protected words: Set<string>;
   public size: number = 0;
   private readonly wordLength: number = 0;
-  protected wordsWithLetter: Map<string, Set<string>>;
+  protected wordsWithLetter = new Map<string, Set<string>>();
 
   constructor(words: string[]) {
     this.wordLength = words[0].length;
@@ -40,7 +40,7 @@ export class WordList {
    */
   public containsAtIndex(letter: string, index: number): Set<string> {
     if (this.words.size === 0) throw new Error('Word list is empty.');
-    return this.groupings[index][letter] || new Set<string>();
+    return this.groupings[index].get(letter) || new Set<string>();
   }
 
   /**
@@ -123,8 +123,9 @@ export class WordList {
         // Populate the groupings object.
         if (this.groupings.length !== this.wordLength) this.groupings.push(new Map<string, Set<string>>());
         const letter = word[i];
-        if (!(letter in this.groupings[i])) this.groupings[i][letter] = new Set<string>();
-        this.groupings[i][letter].add(word);
+        const temp = this.groupings[i].get(letter) || new Set<string>();
+        temp.add(word);
+        this.groupings[i].set(letter, temp);
 
         // Populate the wordsWithLetter object.
         if (!this.wordsWithLetter.has(letter)) {

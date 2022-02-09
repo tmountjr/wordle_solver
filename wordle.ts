@@ -1,10 +1,7 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import { WordList } from './WordList';
-import { intersect, difference } from './helpers';
 
 function wordle() {
-  const words: string[] = fs.readFileSync(path.resolve('./words.txt')).toString().split('\n');
+  const words: string[] = require('./words.json');
   let wordList = new  WordList(words);
   const targetWord = words[Math.floor(Math.random() * words.length)];
   let guess: string = 'arose';
