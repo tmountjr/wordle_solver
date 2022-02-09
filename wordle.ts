@@ -51,7 +51,7 @@ function wordle() {
  * @param guess The word we're guessing is a match
  * @returns A string array indicating whether guess[i] was a direct match, was found elsewhere, or was not found at all.
  */
-function _wordleResults(target: string, guess: string): string[] {
+export function _wordleResults(target: string, guess: string): string[] {
   return guess.split('').map((letter, index) => {
     let toReturn = 'x';
     if (target.indexOf(letter) > -1) {
@@ -69,7 +69,7 @@ function _wordleResults(target: string, guess: string): string[] {
  * @param results The raw string of results
  * @returns A color-coded output string.
  */
-function _wordleColors(results: string[]): string {
+export function _wordleColors(results: string[]): string {
   const colors: { [key: string]: string; } = {
     x: String.fromCodePoint(11036),
     y: String.fromCodePoint(129000),
@@ -78,4 +78,4 @@ function _wordleColors(results: string[]): string {
   return results.map(x => colors[x]).join('');
 }
 
-wordle();
+// wordle();
