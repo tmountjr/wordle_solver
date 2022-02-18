@@ -1,19 +1,7 @@
-import * as chalk from 'chalk'
 import * as Inquirer from 'inquirer'
 import { WordList } from './WordList'
 
 const quitCode = 'q'
-
-// high-level workflow:
-// once the app is spun up, initialize the wordlist, etc.
-// start a while loop (just look at wordlist length and results != 'ggggg')
-// -- ask for guess
-// -- ask for given result
-// -- process result
-// -- show number of words left
-// -- ask to show the words or not
-// -- -- if yes, print words out in columns
-// -- -- if no, go back to the top of the while loop
 
 async function main(): Promise<void> {
   const wordList = new WordList(require('./words.json'))
@@ -42,7 +30,7 @@ async function main(): Promise<void> {
           return input.split('').map(letter => colors[letter]).join('')
         },
         validate: validResult,
-        when: (answers: { [key: string]: string }) => answers.guess !== 'q'
+        when: (answers: { [key: string]: string }) => answers.guess !== quitCode
       }
     ])
     const guess = round.guess
