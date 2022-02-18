@@ -1,7 +1,7 @@
 import * as Inquirer from 'inquirer'
 import { WordList } from './WordList'
 
-const quitCode = 'q'
+const quitCode: string = 'q'
 
 async function main(): Promise<void> {
   const wordList = new WordList(require('./words.json'))
@@ -39,13 +39,14 @@ async function main(): Promise<void> {
     if (guess === quitCode) break
     wordList.processExternalResult(guess, guessResults.split(''))
     
-    const { show } = await Inquirer.prompt({
+    const showResults: { [key: string]: boolean } = await Inquirer.prompt({
       name: 'show',
       type: 'confirm',
       message: `There are now ${wordList.size} words remaining in the list. Show them?`,
       default: false,
       when: () => guessResults !== 'ggggg',
     })
+    const { show } = showResults
 
     if (show) {
       console.log(wordList.words)
