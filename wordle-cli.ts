@@ -64,7 +64,7 @@ async function main(): Promise<void> {
 async function validGuess(input: string): Promise<boolean|string> {
   if (input === quitCode) return true
   if (input.length !== 5) return 'Guess must be five characters.'
-  if (!/[A-Za-z]+/.test(input)) return 'Guess must contain only the letters A-Z.'
+  if (!/^[A-Za-z]+$/.test(input)) return 'Guess must contain only the letters A-Z.'
 
   return true;
 }
