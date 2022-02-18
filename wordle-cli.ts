@@ -21,12 +21,12 @@ async function main(): Promise<void> {
         message: 'Enter the results of this guess:',
         transformer: (input: string): string => {
           input = input.replace(/[^xyg]/ig, '-')
-          const colors: { [key: string]: string; } = {
+          const colors: { [key: string]: string } = {
             x: String.fromCodePoint(11036),
             y: String.fromCodePoint(129000),
             g: String.fromCodePoint(129001),
             '-': String.fromCodePoint(10060)
-          };
+          }
           return input.split('').map(letter => colors[letter]).join('')
         },
         validate: validResult,
