@@ -6,6 +6,7 @@ export class WordList {
   public size: number = 0;
   private readonly wordLength: number = 0;
   protected wordsWithLetter = new Map<string, Set<string>>();
+  protected protectedLetters = new Set<string>();
 
   constructor(words: string[]) {
     this.wordLength = words[0].length;
@@ -56,16 +57,28 @@ export class WordList {
 
     // Convert the results into an object mapping.
     const details: { [key: string]: number[] } = { x: [], y: [], g: [] };
-    results.forEach((result, index) => details[result].push(index));
+    results.forEach((result, index) => {
+      details[result].push(index);
+
+      // "Protect" any letters guessed (either yellow or green) from being removed later.
+      if (result === 'y' || result === 'g') this.protectedLetters.add(guess[index]);
+    });
 
     // Remove all words based on 'x' values.
     if (details['x'].length) {
-      const toRemove = union(...details['x'].map(i => guess[i]).map(letter => this.wordsWithLetter.get(letter) || new Set<string>()));
-      if (toRemove.size > 0) {
-        const prevWordsSize = this.wordPool.size;
-        this.wordPool = difference(this.wordPool, toRemove);
-        const afterWordsSize = this.wordPool.size;
-        if (prevWordsSize !== afterWordsSize) this.regenerateList();
+      // Rather than blindly remove letters, make sure that we're not removing letters that we know should exist in the solution.
+      const unprotectedLettersToRemove: string[] = [...difference(
+        new Set<string>(details['x'].map(i => guess[i])),
+        this.protectedLetters
+      )];
+      if (unprotectedLettersToRemove.length > 0) {
+        const toRemove = union(...unprotectedLettersToRemove.map(letter => this.wordsWithLetter.get(letter) || new Set<string>()));
+        if (toRemove.size > 0) {
+          const prevWordsSize = this.wordPool.size;
+          this.wordPool = difference(this.wordPool, toRemove);
+          const afterWordsSize = this.wordPool.size;
+          if (prevWordsSize !== afterWordsSize) this.regenerateList();
+        }
       }
     }
 
