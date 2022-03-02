@@ -71,14 +71,22 @@ export class WordList {
         new Set<string>(details['x'].map(i => guess[i])),
         this.protectedLetters
       )];
+      let toRemove = new Set<string>();
       if (unprotectedLettersToRemove.length > 0) {
-        const toRemove = union(...unprotectedLettersToRemove.map(letter => this.wordsWithLetter.get(letter) || new Set<string>()));
-        if (toRemove.size > 0) {
-          const prevWordsSize = this.wordPool.size;
-          this.wordPool = difference(this.wordPool, toRemove);
-          const afterWordsSize = this.wordPool.size;
-          if (prevWordsSize !== afterWordsSize) this.regenerateList();
-        }
+        toRemove = union(...unprotectedLettersToRemove.map(letter => this.wordsWithLetter.get(letter) || new Set<string>()));
+      }
+
+      // Also remove any letters that may have been seen before but still have
+      // another instance of that letter in a wrong spot.
+      let temp = new Set<string>();
+      details['x'].forEach(i => temp = union(temp, (this.groupings[i].get(guess[i]) || new Set<string>())));
+      toRemove = union(toRemove, temp);
+
+      if (toRemove.size > 0) {
+        const prevWordsSize = this.wordPool.size;
+        this.wordPool = difference(this.wordPool, toRemove);
+        const afterWordsSize = this.wordPool.size;
+        if (prevWordsSize !== afterWordsSize) this.regenerateList();
       }
     }
 
